@@ -1,0 +1,34 @@
+<?php
+
+session_start();
+
+echo $_POST['username'];
+
+echo "nome:".$_SESSION['nome'];
+echo $pass ;
+echo $nome."\n" ;
+
+
+
+// Connects to the XE service (i.e. database) on the "localhost" machine
+$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+
+ static $stmt;
+
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}
+
+$stid = oci_parse($conn, 'SELECT * FROM TESTE WHERE user_name = :utl AND password = :pass');
+oci_bind_by_name($stid, ':utl', $nome, -1);
+oci_bind_by_name($stid, ':pass', $pass, -1);
+oci_execute($stid, OCI_DEFAULT);
+
+$row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+if ($row==null)  echo ("ALGO ESTÀ MAL MEU!!!!!");
+else header("Location: home.php");
+
+
+?>
+

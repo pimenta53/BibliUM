@@ -1,0 +1,44 @@
+h1 {text-indent:50px;
+background-color:#33CCFF;
+padding-top:20px;
+ }
+tr{
+width:100%;
+}
+
+div.caixa1
+{
+font-size:14px;
+width:75%;
+padding:10px;
+border:2px solid #66FF99;
+margin:30px;
+background-color:#CCFFFF;
+}
+
+div.caixa2
+{
+width:60%;
+height:120px;
+padding:10px;
+border:2px  #66FF99;
+margin:30px;
+background-color:#FFFFCC;
+}
+div.img
+{
+  margin: 2px;
+  border: 1px  #0000ff;
+  height: auto;
+  width: auto;
+  float: left;
+  text-align: center;
+}
+div.img img
+{
+  display: inline;
+  margin: 5px;
+  border: 10px solid #ffffff;
+}
+p {margin-left:20px;}
+/*body {background-color:#CCFFFF;}*/

@@ -1,0 +1,346 @@
+\documentclass[a4paper,11pt,openright,openbib]{report}
+\usepackage[portuges]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{ae}
+\usepackage[utf8x]{inputenc}
+\usepackage[pdftex]{graphicx}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{acronym}
+\usepackage{multirow}
+\usepackage[section,above,below]{placeins}
+\usepackage{enumerate}
+
+\usepackage[a4paper, pdftex, bookmarks, colorlinks, linkcolor=black, urlcolor=blue]{hyperref} %por linkcolor=cor para ter os links com cor.
+\usepackage[a4paper,left=2.5cm,right=2.5cm,top=3.5cm,bottom=3.5cm]{geometry}
+\usepackage{colortbl}
+\usepackage[margin=10pt,font=small,labelfont=bf]{caption}
+\usepackage{mdwlist}
+\usepackage{tocbibind}
+
+%definições
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2pt}
+
+%def codigo inlining (trocar xml (nome de ambiente) e XML por linguagem correcta (ex. JAVA, C, etc)
+\lstnewenvironment{xml}{\lstset{
+	language=XML,
+	basicstyle=\small,
+	extendedchars=false,
+	inputencoding=utf8x,
+	breaklines=true,
+	showstringspaces=false,
+	keywordstyle=\scriptsize\bfseries,
+	basicstyle=\scriptsize\sf,
+	breakautoindent=false}
+}{}
+
+
+% Title Page
+
+\title{
+	\begin{tabular}{l r}
+	\large{Universidade do Minho} & \multirow{3}{*}{\includegraphics[width=0.2\textwidth]{imagens/UM}} \\
+	\large{Licenciatura em Engenharia Informática} & \\
+	\large{MDIO} & \\
+	\\
+	\\
+	\Large{\textbf{Trabalho Pratico I }} & \\
+	\large{Ano Lectivo de 2010/2011} & \\
+	\\
+	\\
+	\\
+	\end{tabular}
+}
+
+
+\author{
+	\begin{tabular}[t]{l}
+	\\
+	\\
+	54738 \textbf{João Gomes} \\ 
+	54745 \textbf{André Pimenta} \\
+	54802 \textbf{Milton Nunes} \\
+	54825 \textbf{Daniel Santos} \\ 
+	\\ 
+	\end{tabular}
+}
+
+\date{\today}
+
+
+\begin{document}
+
+
+\maketitle
+\pagenumbering{roman}
+
+
+%resumo
+\begin{abstract}
+Este relatorio tem como obejctivo apresentar os resultados e as metodologias usadas para a resolução dos problemas apresentados no ambito da cadeira de MDIO.
+\end{abstract}
+
+
+%\chapter*{Agradecimentos}
+%\addcontentsline{toc}{chapter}{Agradecimentos}
+
+%conteudo
+\tableofcontents
+%\listoffigures
+%\listoftables
+
+%documento
+
+
+%\clearpage
+
+\pagestyle{headings}
+\pagenumbering{arabic}
+\newpage
+\section{Motivação e objectivos}
+Inquestionavelmente este trabalho pratico tem como principal objectico e motivação a aplicação de todos os conhecimentos adquiridos na cadeira, a utilização dos conhecimentos teóricos aplicados em situações praticas.\\
+É também importante referir que só o uso do conhecimento em situações praticas é que surgem as verdadeiras duvidas e se assimila o conhecimento.\\
+\\
+\\
+\section{Estrutura}
+O presente relatório é constituído por cinco capítulos: \textbf{Grupo I}; \textbf{Grupo II}, \textbf{Grupo III}, \textbf{Grupo IV}, \textbf{Grupo V}.
+\newpage
+\chapter{Grupo I}
+\section{Grafo de actividades}
+
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.5]{grafo1.png}
+     \caption{Rede de actividades}
+     \label{Rede de actividades}
+\end{figure}
+
+Com o corte das actividades 2 e 5(correspondente ao maior numero de inscrição dos elementos do grupo) a rede do projecto ficou da forma acima apresentada.
+
+\newpage
+\section{Resolução problema}
+\textbf{Função objectivo}\\
+
+Para a obtenção do caminho critico teremos de ter em conta o caminho que demorar mais tempo a se realizar, pois, como varias tarefas têm dependencias, é necessario
+que umas terminem para que as outras se possam iniciar.\\
+Desta forma tornase obvio que se trata de um problema de otpimização e que se pretende escolher o caminho entre vertice que no final ocupe mais tempo.
+Tudo isto tendo em conta que apenas se pode passar uma unica vez em cada vertice e que é uma rede aciclica.\\
+
+\textbf{Maximização de todos os caminho entre actividades}\\
+max:4 x01 +8 x011 +8 x13 +9 x16 +7 x34 +4 x69 +7 x64 + x410 +4 x117 + 6 x1112 + 2 x78 + 4 x79 ;
+\\função principal, onde são apresentafos todos os caminhos entre os vertices o tempo que cada actividade demora, ou seja o tempo que se demora a passar de um vertice para o outro \\
+\\\textbf{Restrições:}\\
+x01 + x011=1;   escolha do primeiro caminho, entre vertices para o caminho critico, ou seja a escolha da primeira actividade do caminho critico a realizar
+x13 + x16 = x01;   escolha do caminho apartir da actividade 1 que seja pertencente ao caminho critico\\ 
+x34 = x13;   escolha do caminho apartir da actividade 3 que seja pertencente ao caminho critico\\
+x69 + x64 = x16;   escolha do caminho apartir da actividade 6 que seja pertencente ao caminho critico\\
+x410 = x64 + x34;   escolha do caminho apartir da actividade 4 que seja pertencente ao caminho critico\\
+x117 + x1112 =x011;   escolha do caminho apartir da actividade 11 que seja pertencente ao caminho critico\\
+x78 + x79 = x117;   escolha do caminho apartir da actividade 7 que seja pertencente ao caminho critico\\
+
+
+\newpage
+\section{Input Lpsolve}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.8]{input.png}
+     \caption{Input Lpsolve}
+     \label{Input Lpsolve}
+\end{figure}
+
+
+\section{Output Lpsolve}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.8]{output.png}
+     \caption{Output Lpsolve}
+     \label{Output Lpsolve}
+\end{figure}
+
+\newpage
+\section{Caminho critico}
+
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.5]{grafo2.png}
+     \caption{Caminho critico}
+     \label{Caminho critico}
+\end{figure}
+
+Na imagem apresentada acima temos destacadas todas as actividades pertencentes ao caminho critico, estas são as actividades que determinam o tempo total que o projeto necessita para terminar.
+\\Estas actividades são de certa forma 
+
+\section{Actividade pertencente ao caminho critico}
+﻿A actividade 3 pertence ao caminho critico, e apenas pode ser iniciada após 4 U.T.\\
+Esta restrição/limitação deve-se ao facto de a actividade 3 ter como precedente  a actividade 1,e como estamos a falar de actividades do caminho critico e não apenas por isto cada actividade apenas pode ser iniciada após a sua precedente estar realizada.
+
+\section{Actividade não pertencente ao caminho critico}
+A actividade 7 que não pertence ao caminho critico, esta pode ser iniciada apartir 8 U.T porque tem como precedente e restrição a actividade 11, de duração 8,e como é o unico precedente na rede de actividades vai determinar o tempo\\
+Esta activida por inspecção da rede do projecto poderá ser iniciada até 13 U.T, pois o tempo do caminho critico é de 21 U.T e a actividade 7 tem duas actividades sucessoras ou seja dois caminho apartir dela na rede, e escolhendo o maior desses dois caminhos pois estamos a falar do prazo maximo limite, deverá começar no maximo até 13 U.T., de forma a não termos de esperar por uma actividade que não pertence ao caminho critico e como tal a sua espera se torne inutil.\\
+
+\newpage
+\section{diagrama de Gantt}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.6]{grantt.png}
+     \caption{diagrama de Gantt}
+     \label{diagrama de Gantt}
+\end{figure}
+
+\chapter{Grupo II}
+\section{Resolução do Problema}
+
+\\\textbf{Funcao objectivo:}\\
+\\min: tf;\\
+\\tf é o ultimo vertice do grafo, a meta. Como é dito no enunciado do projecto, o que se pretende é que este valor seja o mínimo possivel.\\
+
+
+\\\textbf{Restrições:}\\
+t1 >= 0;\\
+t3 >= 0;\\
+t4 >= 0;\\
+t6 >= 0;\\
+t7 >= 0;\\
+t8 >= 0;\\
+t9 >= 0;\\
+t10 >= 0;\\
+t11 >= 0;\\
+t12 >= 0;\\
+tf >= 0;\\
+t3 >= t1 + 4;\\
+t4 >= t3 + 8;\\
+t4 >= t6 + 9;\\
+t6 >= t1 + 4;\\
+t7 >= t11 + 8;\\
+t8 >= t7 + 4;\\
+t8 >= t12 + 6;\\
+t9 >= t6 + 9;\\
+t9 >= t7 + 4;\\
+t10 >= t4 + 7;\\
+t12 >= t11 + 8;\\
+tf >= t10 + 1;\\
+tf >= t9 + 4;\\
+tf >= t8 + 2;\\
+
+\section{Input Lpsolve}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.6]{2.png}
+     \caption{Input Lpsolve}
+     \label{Input Lpsolve}
+\end{figure}
+
+\newpage
+\section{Output Lpsolve}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.8]{2out.png}
+     \caption{Output Lpsolve}
+     \label{Output Lpsolve}
+\end{figure}
+
+\section{Solução}
+Como podemos verificar atravéz dos resultados obtidos no grupo 1 , e pelos resultados obtidos agora, a solução optima em ambos foi 21.\\
+FALTA MAIS TEXTO::::::
+
+
+\chapter{Grupo III}
+\section{Resolução do Problema}
+\\\textbf{Funcao objectivo:}\\
+min: 100 q1 + 150 q3 + 100 q4 + 800 q6 + 90 q7 + 100 q9 + 100 q11 + 300 q12;\\
+
+\\\textbf{Restrições:}\\
+
+q1 <= 1;\\
+q3 <= 1;\\
+q4 <= 4;\\
+q6 <= 1;\\
+q7 <= 2;\\
+q8 = 0;\\
+q9 <= 1;\\
+q10 = 0;\\
+q11 <= 1;\\
+q12 <= 2;\\
+\\
+t1 >= 0;\\
+t3 >= 0;\\
+t4 >= 0;\\
+t6 >= 0;\\
+t7 >= 0;\\
+t8 >= 0;\\
+t9 >= 0;\\
+t10 >= 0;\\
+t11 >= 0;\\
+t12 >= 0;\\
+tf >= 0;\\
+\\
+t3 >= t1 + 4 - q1;\\
+t4 >= t3 + 8 - q3;\\
+t4 >= t6 + 9 - q6;\\
+t6 >= t1 + 4 - q1;\\
+t7 >= t11 + 8 - q11;\\
+t8 >= t7 + 4 - q7;\\
+t8 >= t12 + 6 - q12;\\
+t9 >= t6 + 9 - q6;\\
+t9 >= t7 + 4 - q7;\\
+t10 >= t4 + 7 - q4;\\
+t12 >= t11 + 8 - q11;\\
+tf >= t10 + 1 - q10;\\
+tf >= t9 + 4 - q9;\\
+tf >= t8 + 2 - q8;\\
+tf = 18;\\
+
+\section{Input Lpsolve}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.6]{3in.png}
+     \caption{Input Lpsolve}
+     \label{Input Lpsolve}
+\end{figure}
+
+\newpage
+\section{Output Lpsolve}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.7]{result3.png}
+     \caption{Output Lpsolve}
+     \label{Output Lpsolve}
+\end{figure}
+\section{Solução}
+
+\chapter{Grupo IV}
+\section{}
+\chapter{Grupo V}
+\section{}
+
+
+
+\chapter{Conclusão}
+\label{c:conclusao}
+
+\newpage
+\chapter{Elementos do Grupo}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.8]{jm.png}
+     \caption{João Miguel}
+     \label{João Miguel}
+\end{figure}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.2]{ap.jpg}
+     \caption{André Pimenta}
+     \label{André Pimenta}
+\end{figure}
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[scale=0.1]{ds.jpg}
+     \caption{Daniel Santos}
+     \label{Daniel Santos}
+\end{figure}
+
+
+\end{document}

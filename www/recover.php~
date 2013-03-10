@@ -1,0 +1,20 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />	
+	<title>Recuperação da conta</title>
+</head>
+<body>
+	<h1>BibliON Contas</h1>
+	<h2>Esqueceu-se da sua palavra-pass?</h2>
+	<p1>Para repor a palavra-passe, escreva o endereço de e-mail completo que utilizou na criação da sua Conta BibliON.</p1>
+	<form  action="admin.php" method="POST">	
+		<p2><br>Endereço de e-mail
+		<br>		
+		<input type="text" name="Conta e-mail" value="" />	
+		<br>		
+		<input type="submit" value="Enviar"/>
+		</p2>	
+	</form>
+	<p3>O seu pedido irá ser recebido pelo administrador e receberá em breve a sua password.</p3>
+</body>
+</html>

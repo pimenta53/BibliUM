@@ -1,0 +1,73 @@
+<html>
+	<Head>
+	<title>BibliON</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="home.css" />	
+	</Head>
+<body>	
+	<?php session_start();if(!$_SESSION['nome']) {Header("Location: index.php");   exit();}?>	
+	<p align="right"><b><?php echo ($_SESSION['nome']) ?></b> |<a href="mybibliON.php"> A minha biblioteca</a> |<a href="home.php">Pesquisa</a> | <a href="myAccount.php">A minha conta</a> | <a href="upload.php">upload documentos</a> | <a href="logout.php">Sair</a></p>
+	<form action="search" method="GET">	
+			<p><b>BibliON</b> <input type="text" name="pesquisa" />		
+			<input type="submit" value="Pesquisar"><a href="advanced_search.php"> Pesquisa avançada</a> </p>		
+	</form>
+	<hr>
+<table border="0">
+		<tr>
+		<td >A minha Biblioteca
+		<hr>		
+		<ul>
+		<li>Livros</li>
+		<li>Relatorios</li>
+		<li>Imagens</li>
+		<li>Outros</li>		
+		</ul>
+		<hr>
+		<p>Areas</p>		
+<?php
+		$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}
+
+$stid = oci_parse($conn, 'SELECT area_name FROM AREA');
+oci_execute($stid);
+
+echo "<table border='0'>\n";
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+    echo "<tr>\n";
+    foreach ($row as $item) {
+        echo "    <td>" . ($item !== null ? htmlentities($item, ENT_QUOTES) : "&nbsp;") . "</td>\n";
+    }
+    echo "</tr>\n";
+}
+echo "</table>\n";
+?>
+
+		</ul>
+		</td>
+		<td align="center" width=85%> coluna 2</td>
+		<td >
+		<p>Formatos</p>		
+		<hr>		
+<?php
+$stid = oci_parse($conn, 'SELECT name_doc FROM DOCTYPE');
+oci_execute($stid);
+
+echo "<table border='0'>\n";
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+    echo "<tr>\n";
+    foreach ($row as $item) {
+        echo "    <td>" . ($item !== null ? htmlentities($item, ENT_QUOTES) : "&nbsp;") . "</td>\n";
+    }
+    echo "</tr>\n";
+}
+echo "</table>\n";
+oci_close($conn);
+?>
+		</td>		
+		</tr>	
+</table>
+</body>	
+</html>

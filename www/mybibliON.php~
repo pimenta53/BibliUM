@@ -1,0 +1,70 @@
+<html>
+<Head>
+	<?php session_start();?>
+	<title>BibliON</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="home.css" />	
+	</Head>
+<body>	
+	<p align="right"><b><?php echo $_SESSION['nome'] ?></b> |<a href="mybibliON.php"> A minha biblioteca</a> |<a href="home.php">Pesquisa</a> | A minha conta | upload documentos | <a href="logout.php">Sair</a></p>
+	<hr>
+	<h1 align="center">A minha biblioteca</h1>	
+	<?php
+		$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+	if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+	}
+
+	$stid = oci_parse($conn, "SELECT * FROM doctype ORDER BY name_doc");
+	oci_execute($stid, OCI_DEFAULT);
+	$i=0;
+	$docs_type;
+	$cods_type;
+
+	while ($docs=oci_fetch_array($stid)) {  
+		$docs_type[$i]=$docs['NAME_DOC'];
+		$cods_type[$i]=$docs['COD_TYPE'];
+		$i++;	
+	}
+	oci_free_statement($stid);
+
+$i=0;
+while($cods_type[$i]){
+	
+	$stid = oci_parse($conn, "SELECT doc_name,cod_doc FROM docs WHERE username=:b1 AND cod_type=:b2 ORDER BY doc_name");
+	oci_bind_by_name($stid,":b1",$_SESSION['nome']);	
+	oci_bind_by_name($stid,":b2",$cods_type[$i]);	
+	oci_execute($stid, OCI_DEFAULT);
+	$j=0;
+
+	while ($docs=oci_fetch_array($stid)) {  
+		$documento[$i][$j]=$docs['DOC_NAME'];		
+		$id[$i][$j]=$docs['COD_DOC'];	
+		$j++;	
+	}
+oci_free_statement($stid);	
+$i++;
+}
+	
+?>		
+<table border='1' align="center">
+<tr>
+<?php
+$i=0;
+while($docs_type[$i]){ echo "<th valign='top'> $docs_type[$i] (".count($documento[$i]). ")"; 
+	echo"<table >";		
+		$j=0;		
+		while($documento[$i][$j] && $id[$i][$j])
+		{echo "<tr><td><a href=download.php?id=".$id[$i][$j].">".$documento[$i][$j]."</a></td></tr>";$j++;}
+	echo "</table>";
+echo "</th>";
+$i++;
+}?>
+</tr>
+
+
+</table>
+
+</body>
+</html>

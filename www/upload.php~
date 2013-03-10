@@ -1,0 +1,223 @@
+<html>
+	<Head>
+	<?php session_start();if(!$_SESSION['nome']) {Header("Location: index.php");   exit();}?>
+	<title>upload</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="home.css" />	
+	</Head>
+<body>	
+	<p align="right"><b><?php echo ($_SESSION['nome']) ?></b> |<a href="mybibliON.php"> A minha biblioteca</a> |<a href="home.php">Pesquisa</a> | A minha conta | <a href="upload.php">upload documentos</a> | <a href="logout.php">Sair</a></p>
+	<hr>	
+	<h1>Upload documents</h1>
+<?php
+ 
+require_once "HTML/QuickForm.php";
+require('HTTP/Upload.php');
+require_once "functions/date.php"; 
+
+session_start();if(!$_SESSION['nome']) {Header("Location: index.php");   exit();}
+
+
+$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}
+// para documentos
+$stid = oci_parse($conn, "SELECT * FROM doctype");
+oci_execute($stid, OCI_DEFAULT);
+$i=0;
+$docs_type;
+$cods_type;
+
+	while ($docs=oci_fetch_array($stid)) {  
+		$docs_type[$i]=$docs['NAME_DOC'];
+		$cods_type[$i]=$docs['COD_TYPE'];
+		$i++;	
+	}
+
+oci_free_statement($stid);
+
+
+$stid = oci_parse($conn, "SELECT * FROM area");
+oci_execute($stid, OCI_DEFAULT);
+$i=0;
+$areas_name;
+$cods_area;
+
+	while ($docs=oci_fetch_array($stid)) {  
+		$areas_name[$i]=$docs['AREA_NAME'];
+		$cods_area[$i]=$docs['COD_AREA'];
+		$i++;	
+	}
+
+oci_free_statement($stid);
+
+
+$i=0;
+while($cods_area[$i]){
+$stid = oci_parse($conn, "SELECT * FROM specific WHERE cod_area=:b1");
+oci_bind_by_name($stid, ":b1",$cods_area[$i]);
+oci_execute($stid, OCI_DEFAULT);
+
+$j=0;
+$specific_name[$i][$j];
+$cods_specific[$i][$j];
+
+	while ($docs=oci_fetch_array($stid)) {  
+		$specific_name[$i][$j]=$docs['NAME_SPECIFIC']; 
+		$cods_specific[$i][$j]=$docs['COD_SPECIFIC'];
+		$j++;	
+	}
+
+oci_free_statement($stid);
+$i++;
+}
+
+
+
+$stid = oci_parse($conn, "SELECT * FROM univ");
+oci_execute($stid, OCI_DEFAULT);
+$i=1;
+$univ_name[0]=NULL;
+$cods_univ[0]=NULL;
+
+	while ($docs=oci_fetch_array($stid)) {  
+		$univ_name[$i]=$docs['UNIV_NAME'];
+		$cods_univ[$i]=$docs['COD_UNIV'];
+		$i++;	
+	}
+
+oci_free_statement($stid);
+
+$stid = oci_parse($conn, 'SELECT * FROM COUNTRY order by country_name ');
+oci_execute($stid, OCI_DEFAULT);
+$i=1;
+$country_name[0]=NULL;
+$cods_country[0]=NULL;
+
+	while ($docs=oci_fetch_array($stid)) {  
+		$country_name[$i]=$docs['COUNTRY_NAME'];
+		$cods_country[$i]=$docs['COD_COUNTRY'];
+		$i++;	
+	}
+
+oci_free_statement($stid);
+
+
+// Create the autocomplete element
+
+// Map the array to the autocomplete field
+
+
+
+	$form = new HTML_QuickForm('uploader','POST');
+ 	$form->addElement('text', 'name', 'name');
+	$checkbox=$form->addElement('checkbox','my','da sua autoria?', '(Selecionar apenas se é da sua autoria o documento.)'); 	
+ 	$form->addElement('text', 'author', 'autor');;			
+	$form->addElement('date','date', 'Birth date',array('minYear'=> 1900,'addEmptyOption' => 'true','emptyOptionText' => array('d'=>'Dia','M'=>'Mês','Y'=>'Ano')));
+	$form->addElement('select','country','author country: ',$country_name);	
+	$form->addElement('select','doc_type','doc_type',$docs_type);
+	$form->addElement('select','univ','universidade',$univ_name);	
+	$select = $form->addElement('hierselect', 'area', 'Area:');
+	$select->setOptions(array($areas_name, $specific_name));
+	$form->addElement('textarea','description','Descricao: ','rows="5" cols="50"');  	
+	$form->addElement('file','uploaded_file','Your File:');	
+	$form->addElement('submit','save','upload:'); 	
+ 	
+	$form->addRule('uploaded_file','Please upload a file','uploadedfile');
+	$form->addRule('name', '<font face=verdana size=1 color=red>Não preencheu o seu o nome', 'required');
+ 	$form->addRule('doc_type', '<font face=verdana size=1 color=red>Não preencheu o seu o nome', 'required');
+ 	$form->addRule('area', '<font face=verdana size=1 color=red>Não preencheu o seu o nome', 'required');
+	$form->addRule('name','Só pode ter no maximo 20 caracteres','maxlength',15); 
+	$form->addRule('desciption','Só pode ter no maximo 20 caracteres','maxlength',300); 	
+	$form->addRule('author','Só pode ter no maximo 20 caracteres','maxlength',10); 	
+ 	
+if ($form->validate()) { 
+	
+
+$area=($form->exportValue('area'));
+$a=$area[0];$e=$area[1];
+$cod_author=NULL;
+
+if($form->exportValue('author')!=NULL){
+	
+	//$stid = oci_parse($conn, 'insert into author values (SELECT ,username, birth_date, cod_country   FROM usersB WHERE username='pimz'))');	
+	//oci_execute($stid);	
+	//oci_free_statement($stid);	
+	
+	$s = oci_parse($conn,"insert into author values (new_author.NEXTVAL,:b1,TO_DATE(:b2,'YYYY/MM/DD'),:b3) returning cod_author into :b4");
+	oci_bind_by_name($s, ":b1",($form->exportValue('author')));
+	oci_bind_by_name($s,":b2",dataS($form->exportValue('date')));	
+	oci_bind_by_name($s, ":b3",$cods_country[($form->exportValue('country'))]);	
+	oci_bind_by_name($s,":b4",$cod_author);		
+	oci_execute($s, OCI_DEFAULT);
+   oci_commit($conn);
+	oci_free_statement($s);
+
+}
+
+
+
+
+
+
+$s = oci_parse($conn,"insert into docs values(new_docs.NEXTVAL,:b1,:b2,TO_DATE(:data,'YYYY/MM/DD'),:b3,:b4,:b5,:b6,:b7,:b8,null)returning cod_doc into :b9");
+oci_bind_by_name($s, ":b1",($form->exportValue('name')));
+oci_bind_by_name($s, ":b2",($form->exportValue('description')));
+oci_bind_by_name($s, ":b3",$cods_area[$a]);
+oci_bind_by_name($s, ":b4",($cods_specific[$a][$e]));
+oci_bind_by_name($s, ":b5",($cods_univ[$form->exportValue('univ')]));
+oci_bind_by_name($s, ":b6",$cod_author);
+oci_bind_by_name($s, ":b7",($cods_type[$form->exportValue('doc_type')]));   
+oci_bind_by_name($s, ":b8",$_SESSION['nome']);
+oci_bind_by_name($s, ":b9",$id);
+oci_bind_by_name($s, ":data",date("Y/m/d"));
+
+oci_execute($s, OCI_DEFAULT);
+oci_commit($conn);
+oci_free_statement($s);
+
+$s = oci_parse($conn,"insert into logg values (new_logg.NEXTVAL,:b1,TO_DATE(:b2,'YYYY/MM/DD'),'u',:b3)");
+oci_bind_by_name($s, ":b1",$_SESSION['nome']);
+oci_bind_by_name($s, ":b2",date("Y/m/d"));
+oci_bind_by_name($s, ":b3",$id);
+oci_execute($s, OCI_DEFAULT);
+oci_commit($conn);
+oci_free_statement($s);
+
+$upload = new HTTP_Upload("pt_BR");
+$file = $upload->getFiles('uploaded_file');
+ $file->setName($id);
+
+if ($file->isValid()) {
+	//$name = $file->getProp('name');	
+	    
+    $moved = $file->moveTo("/home/pimenta/www/docs");
+    if (!PEAR::isError($moved)) {
+			        
+        echo "File was moved to uploads/";
+	$props = $file->getProp();
+	print_r($props);
+    
+    } else {        
+        echo $moved->getMessage();
+    }
+} elseif ($file->isMissing()) {
+    echo "No file was provided.";
+} elseif ($file->isError()) {
+    echo $file->errorMsg();
+
+}   
+   
+    
+} else { 
+   $form->display(); 
+}
+
+oci_close($conn);
+
+
+?>
+</body>
+</html>

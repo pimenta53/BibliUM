@@ -1,0 +1,49 @@
+<?php
+
+
+$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+
+$u='user';
+$f='first';
+$l='last';
+$e='email';
+$p='pass';
+$s= 'm';
+$c= 1;
+
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+} 
+
+
+   // Insert data using bind variables...
+   $stdin = oci_parse($conn,'INSERT INTO COUNTRY VALUES (1 ,null )');
+  /* oci_bind_by_name($s, ':b1', $u,-1);
+   oci_bind_by_name($s, ':b2', $f,-1);
+   oci_bind_by_name($s, ':b3', $l,-1);
+	oci_bind_by_name($s, ':b4', $s,-1);
+   oci_bind_by_name($s, ':b5', $e,-1);
+   oci_bind_by_name($stdin, ':b6', $p);
+   oci_bind_by_name($stdin, ':b7', $c);*/
+   oci_execute($s);
+	oci_commit($conn);   
+   
+$stid = oci_parse($conn, 'SELECT * FROM users');
+oci_execute($stid);
+
+echo "<table border='0'>\n";
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+    echo "<tr>\n";
+    foreach ($row as $item) {
+        echo "    <td>" . ($item !== null ? htmlentities($item, ENT_QUOTES) : "&nbsp;") . "</td>\n";
+    }
+    echo "</tr>\n";
+}
+echo "</table>\n";
+
+echo "   fim";
+
+
+
+?>

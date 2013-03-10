@@ -1,0 +1,179 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Conta BibliON</title>
+</head>
+<body>
+<h1>Register User</h1>
+<?php
+require_once "functions/date.php"; 
+require_once "HTML/QuickForm.php";
+
+
+
+$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+} 
+
+$stid = oci_parse($conn, 'SELECT country_name FROM COUNTRY order by country_name ');
+oci_execute($stid, OCI_DEFAULT);
+$i=0;
+$country;
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {  
+    foreach ($row as $item) {
+        $country[$i]=$item;
+			$i++;    
+    }
+}
+oci_free_statement($stid);
+
+
+ 	$form = new HTML_QuickForm('register', 'post');
+ 	$form->addElement('text', 'username', 'username');
+ 	$form->addElement('text', 'firstname', 'firstname');
+ 	$form->addElement('text', 'lastname', 'lastname');
+ 	$form->addElement('password', 'password', 'password');
+ 	$form->addElement('password','Vpassword', 'very password');
+ 	$form->addElement('text','email', 'email');
+ 	$form->addElement('text','phoneN', 'Phone number');
+ 	
+	$form->addElement('radio', 'sex', 'Sex:', 'Male', 'm');
+	$form->addElement('radio', 'sex', '', 'Female', 'f');
+  
+   $form->addElement('date','date', 'Birth date',array('minYear'=> 1900));
+	$form->addElement('select','country','country: ',$country);  
+   $form->addElement('submit','regist','Regist');
+	$form->addElement('reset', 'btnClear', 'Clear');  
+  
+	$form->addRule('username', '<font face=verdana size=1 color=red>Não preencheu o seu o username', 'required',null);
+	$form->addRule('password', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);
+	$form->addRule('Vpassword', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);
+	$form->addRule('firstname', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);  
+	$form->addRule('lastname', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);
+	$form->addRule('email', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);	
+		
+	
+	$form->addRule('phoneN', '<font face=verdana size=1 color=red>Invalid Phone Number', 'numeric');
+	$form->addRule('email', '<font face=verdana size=1 color=red>Email invalido', 'email'); 
+	$form->addRule('username','Só pode ter no maximo 8 caracteres','maxlength',8);
+	$form->addRule('firstname','Só pode ter no maximo 20 caracteres','maxlength',20);
+	$form->addRule('lastname','Só pode ter no maximo 20 caracteres','maxlength',20);
+	$form->addRule('phoneN','Só pode ter no maximo 20 caracteres','maxlength',20); 
+	$form->addRule('password', 'ERROR: Password must be from three to twelve characters', 'rangelength', array(5,15));	
+	$form->addRule('phoneN', 'Numero de telefone tem de ser correcto', 'rangelength', array(8,20));	
+	$form->addRule(array('password', 'Vpassword'), "The passwords are not the same. Try again.", 'compare', 'eq'); 
+	$form->addRule('username', 'ERROR: use address already in use on the system', 'callback', 'checkU');
+	$form->addRule('email', 'ERROR: use address already in use on the system', 'callback', 'checkE');
+	
+
+	
+	$form->setRequiredNote('<font face=verdana size=2 color=red>* Campos obrigatorios</font>');
+	$form->setJsWarnings('Erro(s):','Preencha corretamente os campos acima');
+  
+  
+
+function checkE($value){
+	
+$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+/*if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}*/
+
+$stid = oci_parse($conn, "SELECT email FROM usersB WHERE email=:b3");
+oci_bind_by_name($stid, ':b3',$value);
+oci_execute($stid);
+
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {  
+    
+    foreach ($row as $item) {
+        $lol[0]=$item;    
+    }
+}
+
+$flag = ($lol[0] == NULL ) ? true : false;
+oci_free_statement($stid);
+oci_close($conn);
+    return $flag;
+}
+
+
+
+function checkU($value){
+	
+$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+/*if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}*/
+
+$stid = oci_parse($conn, "SELECT username FROM usersB WHERE username=:b3");
+oci_bind_by_name($stid, ':b3',$value);
+oci_execute($stid);
+
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {  
+    
+    foreach ($row as $item) {
+        $lol[0]=$item;    
+    }
+}
+
+$flag = ($lol[0] == NULL ) ? true : false;
+oci_free_statement($stid);
+oci_close($conn);
+    return $flag;
+}
+
+
+if ($form->validate()) {
+	$form->freeze();	
+	session_start();
+	session_register("nome","pass");
+
+
+$name_country=$country[($form->exportValue('country'))];
+$stid = oci_parse($conn, "SELECT cod_country FROM COUNTRY WHERE country_name=:b1");
+oci_bind_by_name($stid, ":b1",$name_country);
+oci_execute($stid);
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {  
+    foreach ($row as $item) {
+        $cod[0]=$item;    
+    }
+}
+oci_free_statement($stid);
+
+
+$_SESSION['nome']=$form->exportValue('username');
+
+if(!($form->exportValue('sex'))) $p="p"; else $p=($form->exportValue('sex'));
+$s = oci_parse($conn,"insert into usersB values (:b1,:b2,:b3,TO_DATE(:b4,'YYYY/MM/DD'),:b5,:b6,:b7,:b8,:b9)");
+oci_bind_by_name($s, ":b1",($form->exportValue('username')));
+oci_bind_by_name($s, ":b2",($form->exportValue('firstname')));
+oci_bind_by_name($s, ":b3",($form->exportValue('lastname')));
+oci_bind_by_name($s, ":b4",dataS($form->exportValue('date')));
+oci_bind_by_name($s, ":b5",($form->exportValue('phoneN')));
+oci_bind_by_name($s, ":b6",$p);
+oci_bind_by_name($s, ":b7",($form->exportValue('email')));
+oci_bind_by_name($s, ":b8",($form->exportValue('password')));
+oci_bind_by_name($s, ":b9",($cod[0]));   
+   oci_execute($s, OCI_DEFAULT);
+   
+// Commit to save changes...
+   oci_commit($conn);
+ 
+   // Logoff from Oracle...
+   oci_free_statement($s);
+
+Header("Location: home.php");   
+exit();
+
+}
+
+else {$form->display();}
+oci_close($conn);
+
+?>
+</body>
+</html>

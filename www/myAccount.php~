@@ -1,0 +1,173 @@
+<html>
+	<Head>
+	<?php
+	session_start();if(!$_SESSION['nome']) {Header("Location: index.php");   exit();}
+	require_once "HTML/QuickForm.php";	
+	require_once "functions/date.php";	
+	?>
+	<title>BibliON</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="home.css" />	
+	</Head>
+<body>	
+	<p align="right"><b><?php echo ($_SESSION['nome']) ?></b> |<a href="mybibliON.php"> A minha biblioteca</a> |<a href="home.php">Pesquisa</a> | A minha conta | <a href="upload.php">upload documentos</a> | <a href="logout.php">Sair</a></p>
+	<h1>Minha conta</h1>
+	<hr>
+<?php
+	
+	
+$conn = oci_connect('pimz', 'pimz53', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+} 
+
+$stid = oci_parse($conn, 'SELECT * FROM COUNTRY order by country_name ');
+oci_execute($stid, OCI_DEFAULT);
+$i=0;
+
+	while ($countrys=oci_fetch_array($stid)) {  
+		$country_name[$i]=$countrys['COUNTRY_NAME'];
+		$cods_country[$i]=$countrys['COD_COUNTRY'];
+		$i++;	
+	}
+
+oci_free_statement($stid);
+	
+$stid = oci_parse($conn, 'SELECT * FROM usersB WHERE username=:b1 ');
+oci_bind_by_name($stid,":b1",$_SESSION['nome']);
+oci_execute($stid, OCI_DEFAULT);
+$user=oci_fetch_array($stid);
+oci_free_statement($stid);
+
+	
+	
+	
+	
+	$form = new HTML_QuickForm('modifyAccount','GET');
+ 	$form->addElement('text', 'firstname', 'firstname');
+ 	$form->addElement('text', 'lastname', 'lastname');
+ 	$form->addElement('text','email', 'email');
+ 	$form->addElement('text','phoneN', 'Phone number');
+	$form->addElement('radio', 'sex', 'Sex:', 'Male', 'm');
+	$form->addElement('radio', 'sex', '', 'Female', 'f');
+	$form->addElement('select','country','country: ',$country_name);	
+	$form->addElement('date','date', 'Birth date',array('minYear'=> 1900));	
+	$form->addElement('submit','save','save');
+	$form->addElement('reset', 'btnClear', 'Clear');  
+
+	$form->addRule('firstname', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);  
+	$form->addRule('lastname', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);
+	$form->addRule('email', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);	
+	$form->addRule('phoneN', '<font face=verdana size=1 color=red>Invalid Phone Number', 'numeric');
+	$form->addRule('email', '<font face=verdana size=1 color=red>Email invalido', 'email'); 
+	$form->addRule('firstname','Só pode ter no maximo 20 caracteres','maxlength',20);
+	$form->addRule('lastname','Só pode ter no maximo 20 caracteres','maxlength',20);
+	$form->addRule('phoneN','Só pode ter no maximo 20 caracteres','maxlength',20); 
+	$form->addRule('phoneN', 'Numero de telefone tem de ser correcto', 'rangelength', array(8,20));	 
+	$form->addRule('email', 'ERROR: use address already in use on the system', 'callback', 'checkE');
+  
+  $form->setDefaults(array(
+    'firstname' => $user['FIRST_NAME'],
+    'lastname' => $user['LAST_NAME'],
+    'email' => $user['EMAIL'],
+    'phoneN' => $user['PHONE_NUMBER'],
+    'sex' => $user['SEX'],
+    //'country' => $country_name[$user['COD_COUNTRY']],
+    'date' => $user['BIRTH_DATE']));
+
+
+function checkE($value){
+		
+	$c = oci_connect('pimz', 'pimz53', 'localhost/XE');
+	$stid = oci_parse($c, "SELECT username FROM usersB WHERE email=:b1 AND email!=(select email from usersB WHERE username=:b2)");
+	oci_bind_by_name($stid, ':b1',$value);
+	oci_bind_by_name($stid, ':b2',$_SESSION['nome']);
+	oci_execute($stid);
+	$nrows = oci_fetch_all($stid, $res);
+
+	$flag = ($nrows>0 ) ? false : true;
+	oci_free_statement($stid);
+	oci_close($c);
+
+return $flag;
+}
+  
+	  
+if ($form->validate()) { 
+
+echo 	$cods_country[($form->exportValue('country'))];
+	$s = oci_parse($conn,"UPDATE usersB SET first_name =:b1,last_name=:b2,email=:b3,sex=:b4,cod_country=:b5 ,birth_date=TO_DATE(:b6,'YYYY/MM/DD'), phone_number=:b7 WHERE username=:b8");
+	oci_bind_by_name($s, ":b1",($form->exportValue('firstname')));
+	oci_bind_by_name($s,":b2",($form->exportValue('lastname')));
+	oci_bind_by_name($s,":b3",($form->exportValue('email')));
+	oci_bind_by_name($s,":b4",($form->exportValue('sex')));
+	oci_bind_by_name($s,":b5",$cods_country[($form->exportValue('country'))]);
+	oci_bind_by_name($s, ":b6",dataS($form->exportValue('date')));	
+	oci_bind_by_name($s, ":b7",($form->exportValue('phoneN')));
+	oci_bind_by_name($s, ":b8",$_SESSION['nome']);	
+	oci_execute($s, OCI_DEFAULT);
+   oci_commit($conn);
+	oci_free_statement($s);
+
+Header("Location: home.php");   
+exit();
+
+}
+else {$form->display();}	
+
+
+   echo "<hr>";
+	$form2 = new HTML_QuickForm('modifyPassword','POST');	
+	$form2->addElement('password', 'old_password', 'old password');	
+	$form2->addElement('password', 'password', 'new password');
+ 	$form2->addElement('password','Vpassword', 'Confirm new password:');   
+   $form2->addElement('submit','new_pass','save');  
+  
+	$form2->addRule('password', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);
+	$form2->addRule('Vpassword', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);
+	$form2->addRule('old_password', '<font face=verdana size=1 color=red>Não preencheu a sua passwor', 'required',null);	
+	$form2->addRule('password', 'ERROR: Password must be from three to twelve characters', 'rangelength', array(5,15));	
+	$form2->addRule(array('password', 'Vpassword'), "The passwords are not the same. Try again.", 'compare', 'eq');	
+	$form2->addRule('old_password', 'ERROR: wrong password', 'callback', 'checkP');	
+	
+function checkP($value){
+
+	$c = oci_connect('pimz', 'pimz53', 'localhost/XE');
+	$stid = oci_parse($c, "SELECT user_password FROM usersB WHERE username=:b1 AND user_password=:b2");
+	oci_bind_by_name($stid, ':b1',$_SESSION['nome']);	
+	oci_bind_by_name($stid, ':b2',$value);
+	oci_execute($stid);
+	$nrows = oci_fetch_all($stid, $res);
+
+	$flag = ($nrows>0 ) ? true : false;
+	oci_free_statement($stid);
+	oci_close($c);
+
+return $flag;
+}
+	
+	  
+  
+if ($form2->validate()) { 
+
+	$s = oci_parse($conn,"UPDATE usersB SET user_password =:b1 WHERE username=:b2 ");
+	oci_bind_by_name($s, ":b1",($form2->exportValue('password')));
+	oci_bind_by_name($s,":b2",$_SESSION['nome']);
+	oci_execute($s, OCI_DEFAULT);
+   oci_commit($conn);
+	oci_free_statement($s);
+
+oci_close($conn);
+Header("Location: home.php");   
+exit();
+
+}
+else {$form2->display();}		 	
+oci_close($conn); 	
+
+
+?>
+
+</body>
+</html>
